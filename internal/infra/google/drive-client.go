@@ -5,6 +5,7 @@ package google
 import (
 	"context"
 
+	"golang.org/x/oauth2/google"
 	"google.golang.org/api/drive/v3"
 	"google.golang.org/api/option"
 )
@@ -13,7 +14,7 @@ type DriveClient struct {
 	service *drive.Service
 }
 
-func NewDriveClient(credentialsPath string) (*DriveClient, error) {
+func NewDriveClient(credentialsPath *google.Credentials) (*DriveClient, error) {
 	ctx := context.Background()
 
 	srv, err := drive.NewService(
@@ -21,6 +22,7 @@ func NewDriveClient(credentialsPath string) (*DriveClient, error) {
 		option.WithCredentials(credentialsPath),
 		option.WithScopes(drive.DriveScope),
 	)
+
 	if err != nil {
 		return nil, err
 	}
