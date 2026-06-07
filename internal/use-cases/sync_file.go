@@ -26,7 +26,7 @@ func (s *SyncFile) Execute() error {
 	}
 
 	for _, file := range filesInFolder {
-		fmt.Println(file.Name)
+		fmt.Println(file.Checksum)
 	}
 
 	return nil
