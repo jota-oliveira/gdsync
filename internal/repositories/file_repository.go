@@ -3,7 +3,7 @@ package repositories
 import "github.com/jota-oliveira/gdsync/internal/domains"
 
 type FileRepository interface {
-	HasConfigurations() bool
+	HasConfigurations() (string, error)
 	Init(path string) error
 	NewFile(file domains.File) error
 	Delete(id string) error
