@@ -3,6 +3,7 @@ package local
 import (
 	"fmt"
 	"os"
+	"strings"
 	"syscall"
 
 	"github.com/jota-oliveira/gdsync/internal/domains"
@@ -33,7 +34,7 @@ func generateID(fileInfo os.FileInfo) string {
 }
 
 func (fs *LocalFileSystem) ListFiles(path string) ([]*domains.File, error) {
-	entries, err := os.ReadDir(path)
+	entries, err := os.ReadDir(strings.Trim(path, "\n"))
 	if err != nil {
 		return nil, err
 	}

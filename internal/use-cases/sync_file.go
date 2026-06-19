@@ -3,6 +3,7 @@ package usecases
 import (
 	"fmt"
 
+	"github.com/jota-oliveira/gdsync/internal/domains"
 	"github.com/jota-oliveira/gdsync/internal/interfaces"
 	"github.com/jota-oliveira/gdsync/internal/repositories"
 )
@@ -21,6 +22,12 @@ func NewSyncFile(path string, fs interfaces.FileSystem, fileRepository repositor
 	}
 }
 
+func (s *SyncFile) syncronize(filesInFolder []*domains.File, filesInDB []*domains.File) {
+	for i, file := range filesInFolder {
+		fmt.Println(file, i)
+	}
+}
+
 func (s *SyncFile) Execute() error {
 
 	// if s.repository.HasConfigurations() {
@@ -32,6 +39,14 @@ func (s *SyncFile) Execute() error {
 	// }
 
 	filesInFolder, err := s.localFileSystem.ListFiles(s.path)
+
+	if err != nil {
+		return err
+	}
+
+	filesInDB, err := s.repository.ListFiles(s.path)
+
+	s.syncronize(filesInFolder, filesInDB)
 
 	if err != nil {
 		return err

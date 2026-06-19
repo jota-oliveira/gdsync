@@ -8,5 +8,5 @@ type FileRepository interface {
 	NewFile(file domains.File) error
 	Delete(id string) error
 	UpdateFile(file domains.File) error
-	ListFiles() ([]domains.File, error)
+	ListFiles(path string) ([]*domains.File, error)
 }

@@ -2,6 +2,8 @@ package local
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
 
 	_ "modernc.org/sqlite"
 
@@ -85,6 +87,48 @@ func (fr *FileRepo) UpdateFile(file domains.File) error {
 	return nil
 }
 
-func (fr *FileRepo) ListFiles() ([]domains.File, error) {
-	return nil, nil
+func (fr *FileRepo) ListFiles(path string) ([]*domains.File, error) {
+	rows, err := fr.db.Query(`
+		SELECT
+			local_id as ID,
+			path as Path,
+			size as Size,
+			mod_time as ModTime,
+			drive_id as DriveId
+		FROM files
+		WHERE path = ?
+	`, strings.Trim(path, "\n"))
+
+	if err != nil && err != sql.ErrNoRows {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var files []*domains.File
+
+	for rows.Next() {
+		var file *domains.File
+
+		err := rows.Scan(
+			&file.ID,
+			&file.Path,
+			&file.UpdatedAt,
+			&file.Checksum,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		files = append(files, file)
+
+		fmt.Println("from database: ", file)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return files, nil
 }
