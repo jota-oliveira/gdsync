@@ -124,13 +124,12 @@ func (fr *FileRepo) ListFiles(path string) ([]*domains.File, error) {
 
 	for rows.Next() {
 		file := &domains.File{}
-		var size int64
 		var driveID sql.NullString
 
 		err := rows.Scan(
 			&file.ID,
 			&file.Path,
-			&size,
+			&file.Size,
 			&file.ModTime,
 			&driveID,
 		)
@@ -142,7 +141,8 @@ func (fr *FileRepo) ListFiles(path string) ([]*domains.File, error) {
 			file.DriveID = driveID.String
 		}
 
-		file.Checksum = fmt.Sprintf("%d:%d", size, file.ModTime)
+		file.Checksum = fmt.Sprintf("%d:%d", file.Size, file.ModTime)
+
 		files = append(files, file)
 	}
 

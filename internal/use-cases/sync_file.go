@@ -12,6 +12,7 @@ type SyncFile struct {
 	localFileSystem interfaces.FileSystem
 	path            string
 	repository      repositories.FileRepository
+	driveRepository repositories.DriveRepository
 }
 
 func NewSyncFile(path string, fs interfaces.FileSystem, fileRepository repositories.FileRepository) *SyncFile {
