@@ -23,19 +23,14 @@ func main() {
 
 	// path = strings.TrimSpace(path)
 
-	// For testing purposes
-	// path := "/home/joao/Projects/teste"
-
 	fs := local.NewFileSystem()
 
 	fileRepository, err := local.NewFileRepo()
-
 	if err != nil {
 		log.Fatal("Could not initiate the database")
 	}
 
 	path, err := fileRepository.HasConfigurations()
-
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -46,13 +41,11 @@ func main() {
 		fmt.Println("Choose the folder to sync: ")
 
 		path, err = reader.ReadString('\n')
-
 		if err != nil {
 			log.Fatal("Could not read the path name")
 		}
 
 		err = fileRepository.Init(path)
-
 		if err != nil {
 			log.Fatal(err)
 		}

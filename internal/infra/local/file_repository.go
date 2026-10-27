@@ -16,7 +16,6 @@ type FileRepo struct {
 
 func NewFileRepo() (*FileRepo, error) {
 	db, err := sql.Open("sqlite", "gdsync.db")
-
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,6 @@ func (fr *FileRepo) Init(path string) error {
 			sync_path TEXT NOT NULL
 		);
 	`)
-
 	if err != nil {
 		return err
 	}
@@ -63,7 +61,6 @@ func (fr *FileRepo) Init(path string) error {
 			drive_id TEXT
 		);
 	`)
-
 	if err != nil {
 		return err
 	}
@@ -80,6 +77,7 @@ func (fr *FileRepo) Init(path string) error {
 }
 
 func (fr *FileRepo) NewFile(file domains.File) error {
+	fmt.Println("Saving new", file)
 	return nil
 }
 
@@ -108,22 +106,28 @@ func (fr *FileRepo) ListFiles(path string) ([]*domains.File, error) {
 	var files []*domains.File
 
 	for rows.Next() {
-		var file *domains.File
+		// Correção 1: Instanciar a struct
+		file := &domains.File{}
+
+		// Correção 2: Adicionar uma variável temporária para o tamanho ou ajustar as colunas
+		var size int64
+		var driveId sql.NullString // Usar NullString caso o drive_id possa ser nulo no banco
 
 		err := rows.Scan(
 			&file.ID,
 			&file.Path,
+			&size,
 			&file.UpdatedAt,
-			&file.Checksum,
+			&driveId,
 		)
-
 		if err != nil {
 			return nil, err
 		}
 
-		files = append(files, file)
+		// Aqui você pode remontar o checksum se necessário
+		file.Checksum = fmt.Sprintf("%d:%d", size, file.UpdatedAt)
 
-		fmt.Println("from database: ", file)
+		files = append(files, file)
 	}
 
 	if err := rows.Err(); err != nil {
