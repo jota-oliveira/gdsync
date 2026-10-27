@@ -7,15 +7,16 @@ import (
 )
 
 type File struct {
-	ID        string
-	Name      string
-	Path      string
-	Checksum  string
-	UpdatedAt int64
+	ID       string
+	DriveID  string
+	Name     string
+	Path     string
+	Size     int64
+	ModTime  int64
+	Checksum string
 }
 
 func NewFile() {
-
 }
 
 func (f *File) generateChecksum(fileInfo os.FileInfo) {

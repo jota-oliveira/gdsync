@@ -43,7 +43,6 @@ func (fs *LocalFileSystem) ListFiles(path string) ([]*domains.File, error) {
 
 	for _, entry := range entries {
 		info, err := entry.Info()
-
 		if err != nil {
 			continue
 		}
@@ -52,11 +51,12 @@ func (fs *LocalFileSystem) ListFiles(path string) ([]*domains.File, error) {
 		id := generateID(info)
 
 		files = append(files, &domains.File{
-			ID:        id,
-			Name:      info.Name(),
-			Path:      path + "/" + info.Name(),
-			Checksum:  checksum,
-			UpdatedAt: info.ModTime().Unix(),
+			ID:       id,
+			Name:     info.Name(),
+			Path:     path + "/" + info.Name(),
+			Size:     info.Size(),
+			ModTime:  info.ModTime().UnixNano(),
+			Checksum: checksum,
 		})
 	}
 

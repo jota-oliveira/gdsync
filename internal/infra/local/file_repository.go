@@ -77,8 +77,25 @@ func (fr *FileRepo) Init(path string) error {
 }
 
 func (fr *FileRepo) NewFile(file domains.File) error {
-	fmt.Println("Saving new", file)
-	return nil
+	_, err := fr.db.Exec(
+		`
+        INSERT INTO files (
+            local_id,
+            path,
+            size,
+            mod_time,
+            drive_id
+        )
+        VALUES (?, ?, ?, ?, ?)
+    `,
+		file.ID,
+		file.Path,
+		file.Size,
+		file.ModTime,
+		file.DriveID,
+	)
+
+	return err
 }
 
 func (fr *FileRepo) UpdateFile(file domains.File) error {
@@ -86,47 +103,46 @@ func (fr *FileRepo) UpdateFile(file domains.File) error {
 }
 
 func (fr *FileRepo) ListFiles(path string) ([]*domains.File, error) {
-	rows, err := fr.db.Query(`
-		SELECT
-			local_id as ID,
-			path as Path,
-			size as Size,
-			mod_time as ModTime,
-			drive_id as DriveId
-		FROM files
-		WHERE path = ?
-	`, strings.Trim(path, "\n"))
+	path = strings.TrimRight(path, "/")
 
-	if err != nil && err != sql.ErrNoRows {
+	rows, err := fr.db.Query(`
+        SELECT
+            local_id,
+            path,
+            size,
+            mod_time,
+            drive_id
+        FROM files
+        WHERE substr(path, 1, length(?) + 1) = ? || '/'
+    `, path, path)
+	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	var files []*domains.File
 
 	for rows.Next() {
-		// Correção 1: Instanciar a struct
 		file := &domains.File{}
-
-		// Correção 2: Adicionar uma variável temporária para o tamanho ou ajustar as colunas
 		var size int64
-		var driveId sql.NullString // Usar NullString caso o drive_id possa ser nulo no banco
+		var driveID sql.NullString
 
 		err := rows.Scan(
 			&file.ID,
 			&file.Path,
 			&size,
-			&file.UpdatedAt,
-			&driveId,
+			&file.ModTime,
+			&driveID,
 		)
 		if err != nil {
 			return nil, err
 		}
 
-		// Aqui você pode remontar o checksum se necessário
-		file.Checksum = fmt.Sprintf("%d:%d", size, file.UpdatedAt)
+		if driveID.Valid {
+			file.DriveID = driveID.String
+		}
 
+		file.Checksum = fmt.Sprintf("%d:%d", size, file.ModTime)
 		files = append(files, file)
 	}
 
