@@ -15,11 +15,12 @@ type SyncFile struct {
 	driveRepository repositories.DriveRepository
 }
 
-func NewSyncFile(path string, fs interfaces.FileSystem, fileRepository repositories.FileRepository) *SyncFile {
+func NewSyncFile(path string, fs interfaces.FileSystem, fileRepository repositories.FileRepository, driveRepository repositories.DriveRepository) *SyncFile {
 	return &SyncFile{
 		path:            path,
 		localFileSystem: fs,
 		repository:      fileRepository,
+		driveRepository: driveRepository,
 	}
 }
 
@@ -76,31 +77,27 @@ func (s *SyncFile) Execute() error {
 	// Apenas para visualizar o resultado em tempo de desenvolvimento:
 	fmt.Printf("Novos: %d | Modificados: %d | Deletados: %d\n", len(plan.New), len(plan.Modified), len(plan.Deleted))
 
-	if len(plan.Deleted) > 0 {
-		for _, file := range plan.Deleted {
-			err := s.repository.Delete(file.ID)
-			if err != nil {
-				return err
-			}
+	for _, file := range plan.New {
+		driveID, err := s.driveRepository.Upload(file)
+		if err != nil {
+			return fmt.Errorf(
+				"could not upload %s: %w",
+				file.Path,
+				err,
+			)
 		}
-	}
 
-	if len(plan.New) > 0 {
-		for _, file := range plan.New {
-			err := s.repository.NewFile(*file)
-			if err != nil {
-				return err
-			}
-		}
-	}
+		file.DriveID = driveID
 
-	if len(plan.Modified) > 0 {
-		for _, file := range plan.Modified {
-			err := s.repository.UpdateFile(*file)
-			if err != nil {
-				return err
-			}
+		if err := s.repository.NewFile(*file); err != nil {
+			return fmt.Errorf(
+				"could not persist %s: %w",
+				file.Path,
+				err,
+			)
 		}
+
+		fmt.Printf("Synchronized: %s\n", file.Name)
 	}
 
 	return nil

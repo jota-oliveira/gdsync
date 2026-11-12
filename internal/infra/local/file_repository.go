@@ -66,6 +66,19 @@ func (fr *FileRepo) Init(path string) error {
 	}
 
 	_, err = fr.db.Exec(`
+    CREATE TABLE IF NOT EXISTS folders (
+        local_id TEXT PRIMARY KEY,
+        drive_id TEXT,
+        name TEXT NOT NULL,
+        path TEXT NOT NULL,
+        parent_id TEXT
+    );
+`)
+	if err != nil {
+		return err
+	}
+
+	_, err = fr.db.Exec(`
 		INSERT OR REPLACE INTO config (
 			id,
 			sync_path

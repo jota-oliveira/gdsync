@@ -6,4 +6,5 @@ import "github.com/jota-oliveira/gdsync/internal/domains"
 
 type FileSystem interface {
 	ListFiles(path string) ([]*domains.File, error)
+	ListFolders(path string) ([]*domains.Folder, error)
 }
